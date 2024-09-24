@@ -1,46 +1,193 @@
-// Fetch weather data from OpenWeatherMap
-function fetchWeather(cityName, state) {
-    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${apiKey}&units=imperial`;
-    console.log(`Fetching 5-day weather for ${cityName}, ${state}...`);
-    
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error fetching data for ${cityName}: ${response.statusText}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            const forecastDiv = document.getElementById('forecast');
-            forecastDiv.innerHTML = `<h2>5-Day Weather Forecast for ${cityName}, ${state}</h2>`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5-Day Weather Forecast and Perception</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        p {
+            margin: 5px 0;
+        }
+        input {
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .city-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+        }
+        .city-list p {
+            cursor: pointer;
+            padding: 5px;
+            margin: 0;
+        }
+        .city-list p:hover {
+            background-color: #f0f0f0;
+        }
+        #logo {
+            width: 200px;
+            margin-bottom: 20px;
+        }
+        .weather-icon {
+            width: 50px;
+            vertical-align: middle;
+        }
+        .forecast-entry {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .forecast-entry p {
+            margin-left: 10px;
+        }
+        #forecast {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo at the top -->
+    <img id="logo" src="SystemizedMedia%20Black%20Logo.png" alt="Logo" />
+
+    <h1>5-Day Weather Forecast and Perception</h1>
+
+    <!-- Search bar -->
+    <input type="text" id="citySearch" placeholder="Search for a city..." oninput="filterCities()" />
+
+    <!-- City list (populated dynamically) -->
+    <div id="cityList" class="city-list"></div>
+
+    <!-- Forecast results -->
+    <div id="forecast"></div>
+
+    <script>
+        const apiKey = '7e8b04989662f1bdbeb41ebc8f680f99'; // Your correct API key
+
+        // Define state temperature perceptions
+        const stateTempPerception = {
+            Texas: { Cold: 50, Cool: 65, Warm: 80, Hot: 90 },
+            Pennsylvania: { Cold: 30, Cool: 50, Warm: 70, Hot: 80 },
+            Utah: { Cold: 30, Cool: 50, Warm: 70, Hot: 85 },
+            Georgia: { Cold: 40, Cool: 55, Warm: 75, Hot: 85 }, // Added perception for Georgia
+        };
+
+        // Define cities and their coordinates
+        const cities = {
+            Houston: { state: 'Texas', lat: 29.7604, lon: -95.3698 },
+            Lancaster: { state: 'Pennsylvania', lat: 40.0379, lon: -76.3055 },
+            'Salt Lake City': { state: 'Utah', lat: 40.7608, lon: -111.8910 },
+            Oakwood: { state: 'Georgia', lat: 34.2279, lon: -83.8771 } // Added Oakwood, Georgia
+        };
+
+        // Function to classify temperature perception
+        function classifyTemperature(state, temp) {
+            const thresholds = stateTempPerception[state];
+            if (temp < thresholds.Cold) return 'Cold';
+            if (temp < thresholds.Cool) return 'Cool';
+            if (temp < thresholds.Warm) return 'Warm';
+            return 'Hot';
+        }
+
+        // Fetch weather data from OpenWeatherMap
+        function fetchWeather(cityName, state) {
+            const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${apiKey}&units=imperial`;
+            console.log(`Fetching 5-day weather for ${cityName}, ${state}...`);
             
-            let dayCount = 0;
-            let today = new Date().getDate();
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error fetching data for ${cityName}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const forecastDiv = document.getElementById('forecast');
+                    forecastDiv.innerHTML = `<h2>5-Day Weather Forecast for ${cityName}, ${state}</h2>`;
+                    
+                    let dayCount = 0;
+                    let today = new Date().getDate();
 
-            data.list.forEach((forecast) => {
-                const forecastDate = new Date(forecast.dt * 1000);
+                    data.list.forEach((forecast) => {
+                        const forecastDate = new Date(forecast.dt * 1000);
 
-                if (forecastDate.getDate() !== today) {
-                    dayCount++;
-                    today = forecastDate.getDate();
+                        if (forecastDate.getDate() !== today) {
+                            dayCount++;
+                            today = forecastDate.getDate();
 
-                    const temp = forecast.main.temp;
-                    const perception = classifyTemperature(state, temp);
-                    const iconCode = forecast.weather[0].icon;
-                    const iconUrl = `https://openweathermap.org/img/wn/${iconCode}.png`;
+                            const temp = forecast.main.temp;
+                            const perception = classifyTemperature(state, temp);
+                            const iconCode = forecast.weather[0].icon;
+                            const iconUrl = `https://openweathermap.org/img/wn/${iconCode}.png`;
 
-                    forecastDiv.innerHTML += `
-                        <div class="forecast-entry">
-                            <img class="weather-icon" src="${iconUrl}" alt="Weather icon" />
-                            <p>${forecastDate.toLocaleDateString()}: ${temp}°F - Perceived as ${perception}</p>
-                        </div>
-                    `;
-                }
+                            forecastDiv.innerHTML += `
+                                <div class="forecast-entry">
+                                    <img class="weather-icon" src="${iconUrl}" alt="Weather icon" />
+                                    <p>${forecastDate.toLocaleDateString()}: ${temp}°F - Perceived as ${perception}</p>
+                                </div>
+                            `;
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                    const forecastDiv = document.getElementById('forecast');
+                    forecastDiv.innerHTML = `<p style="color:red;">Failed to fetch data for ${cityName}, ${state}: ${error.message}</p>`;
+                });
+        }
+
+        // Populate the city list dynamically
+        function populateCityList() {
+            const cityList = document.getElementById('cityList');
+            cityList.innerHTML = ''; // Clear the list first
+
+            // Loop through the cities object and create a list of clickable cities
+            Object.entries(cities).forEach(([cityName, cityData]) => {
+                const cityElement = document.createElement('p');
+                cityElement.innerText = `${cityName}, ${cityData.state}`;
+                cityElement.onclick = () => fetchWeather(cityName, cityData.state);
+                cityList.appendChild(cityElement);
             });
-        })
-        .catch(error => {
-            console.error(error);
-            const forecastDiv = document.getElementById('forecast');
-            forecastDiv.innerHTML = `<p style="color:red;">Failed to fetch data for ${cityName}, ${state}: ${error.message}</p>`;
-        });
-}
+        }
+
+        // Filter cities based on search input
+        function filterCities() {
+            const input = document.getElementById('citySearch').value.toLowerCase();
+            const cityList = document.getElementById('cityList');
+            const cityElements = cityList.getElementsByTagName('p');
+
+            // Loop through all city elements and hide/show based on search query
+            for (let i = 0; i < cityElements.length; i++) {
+                const city = cityElements[i];
+                const cityName = city.innerText.toLowerCase();
+                if (cityName.includes(input)) {
+                    city.style.display = '';
+                } else {
+                    city.style.display = 'none';
+                }
+            }
+        }
+
+        // Initially populate the city list
+        window.onload = populateCityList;
+    </script>
+</body>
+</html>
