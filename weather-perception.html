@@ -80,14 +80,46 @@
     <div id="forecast"></div>
 
     <script>
-        const apiKey = '7e8b04989662f1bdbeb41ebc8f680f99'; // Your correct API key
+        const apiKey = '7e8b04989662f1bdbeb41ebc8f680f99';
 
-        // Define state temperature perceptions
+        // Define state temperature perceptions (with Fair)
         const stateTempPerception = {
-            Texas: { Cold: 50, Cool: 65, Warm: 80, Hot: 90 },
-            Pennsylvania: { Cold: 30, Cool: 50, Warm: 70, Hot: 80 },
-            Utah: { Cold: 30, Cool: 50, Warm: 70, Hot: 85 },
-            Georgia: { Cold: 40, Cool: 55, Warm: 75, Hot: 85 }, // Added perception for Georgia
+            Texas:        { Cold: 50, Cool: 65, Warm: 75, Fair: 85, Hot: 90 },
+            Pennsylvania: { Cold: 30, Cool: 50, Warm: 65, Fair: 75, Hot: 80 },
+            Utah:         { Cold: 30, Cool: 50, Warm: 65, Fair: 80, Hot: 85 },
+            Georgia:      { Cold: 40, Cool: 55, Warm: 70, Fair: 80, Hot: 85 },
+        };
+
+        // Define HVAC offer suggestions
+        const hvacSuggestions = {
+            Texas: {
+                Cold:   "Promote heating system tune-ups or furnace checks.",
+                Cool:   "Offer dual HVAC system checkups (heating & AC).",
+                Warm:   "Highlight pre-season AC maintenance specials.",
+                Fair:   "Advertise ductless mini splits or air purification upgrades.",
+                Hot:    "Push emergency AC service or replacement offers."
+            },
+            Pennsylvania: {
+                Cold:   "Promote furnace repair/replacement or emergency heat services.",
+                Cool:   "Offer whole-home humidifier installs or heater tune-ups.",
+                Warm:   "Highlight AC tune-up or replacement discounts.",
+                Fair:   "Advertise energy-efficient upgrades or smart thermostats.",
+                Hot:    "Promote rapid-response AC repair and install offers."
+            },
+            Utah: {
+                Cold:   "Offer furnace inspection and emergency repair.",
+                Cool:   "Promote seasonal HVAC check-ups.",
+                Warm:   "Advertise early AC tune-ups.",
+                Fair:   "Showcase smart thermostat installs.",
+                Hot:    "Push AC replacement or repair specials."
+            },
+            Georgia: {
+                Cold:   "Feature heat pump or furnace tune-ups.",
+                Cool:   "Bundle HVAC service plans.",
+                Warm:   "Run AC service specials.",
+                Fair:   "Offer mini split installs or air quality upgrades.",
+                Hot:    "Highlight fast AC repair or install."
+            }
         };
 
         // Define cities and their coordinates
@@ -95,53 +127,59 @@
             Houston: { state: 'Texas', lat: 29.7604, lon: -95.3698 },
             Lancaster: { state: 'Pennsylvania', lat: 40.0379, lon: -76.3055 },
             'Salt Lake City': { state: 'Utah', lat: 40.7608, lon: -111.8910 },
-            Oakwood: { state: 'Georgia', lat: 34.2279, lon: -83.8771 } // Added Oakwood, Georgia
+            Oakwood: { state: 'Georgia', lat: 34.2279, lon: -83.8771 }
         };
 
-        // Function to classify temperature perception
+        // Classify temperature, now including "Fair"
         function classifyTemperature(state, temp) {
-            const thresholds = stateTempPerception[state];
-            if (temp < thresholds.Cold) return 'Cold';
-            if (temp < thresholds.Cool) return 'Cool';
-            if (temp < thresholds.Warm) return 'Warm';
+            const t = stateTempPerception[state];
+            if (temp < t.Cold) return 'Cold';
+            if (temp < t.Cool) return 'Cool';
+            if (temp < t.Warm) return 'Warm';
+            if (temp < t.Fair) return 'Fair';
             return 'Hot';
         }
 
-        // Fetch weather data from OpenWeatherMap
+        // Fetch weather data
         function fetchWeather(cityName, state) {
             const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${apiKey}&units=imperial`;
             console.log(`Fetching 5-day weather for ${cityName}, ${state}...`);
-            
+
             fetch(url)
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error fetching data for ${cityName}: ${response.statusText}`);
-                    }
+                    if (!response.ok) throw new Error(`Error fetching data for ${cityName}: ${response.statusText}`);
                     return response.json();
                 })
                 .then(data => {
                     const forecastDiv = document.getElementById('forecast');
                     forecastDiv.innerHTML = `<h2>5-Day Weather Forecast for ${cityName}, ${state}</h2>`;
-                    
-                    let dayCount = 0;
-                    let today = new Date().getDate();
+
+                    let datesShown = {};
+                    let daysCount = 0;
 
                     data.list.forEach((forecast) => {
                         const forecastDate = new Date(forecast.dt * 1000);
+                        const dayString = forecastDate.toDateString();
 
-                        if (forecastDate.getDate() !== today) {
-                            dayCount++;
-                            today = forecastDate.getDate();
+                        // Only show the forecast closest to 12:00 PM for each day
+                        if (!datesShown[dayString] && forecastDate.getHours() === 12 && daysCount < 5) {
+                            datesShown[dayString] = true;
+                            daysCount++;
 
                             const temp = forecast.main.temp;
                             const perception = classifyTemperature(state, temp);
                             const iconCode = forecast.weather[0].icon;
                             const iconUrl = `https://openweathermap.org/img/wn/${iconCode}.png`;
+                            const hvacSuggestion = hvacSuggestions[state][perception];
 
                             forecastDiv.innerHTML += `
                                 <div class="forecast-entry">
                                     <img class="weather-icon" src="${iconUrl}" alt="Weather icon" />
-                                    <p>${forecastDate.toLocaleDateString()}: ${temp}°F - Perceived as ${perception}</p>
+                                    <p>
+                                        <strong>${forecastDate.toLocaleDateString()}:</strong> 
+                                        ${temp}°F – Perceived as <strong>${perception}</strong><br>
+                                        <em>Recommended HVAC offer: ${hvacSuggestion}</em>
+                                    </p>
                                 </div>
                             `;
                         }
@@ -154,12 +192,10 @@
                 });
         }
 
-        // Populate the city list dynamically
+        // Populate the city list
         function populateCityList() {
             const cityList = document.getElementById('cityList');
-            cityList.innerHTML = ''; // Clear the list first
-
-            // Loop through the cities object and create a list of clickable cities
+            cityList.innerHTML = '';
             Object.entries(cities).forEach(([cityName, cityData]) => {
                 const cityElement = document.createElement('p');
                 cityElement.innerText = `${cityName}, ${cityData.state}`;
@@ -173,20 +209,13 @@
             const input = document.getElementById('citySearch').value.toLowerCase();
             const cityList = document.getElementById('cityList');
             const cityElements = cityList.getElementsByTagName('p');
-
-            // Loop through all city elements and hide/show based on search query
             for (let i = 0; i < cityElements.length; i++) {
                 const city = cityElements[i];
                 const cityName = city.innerText.toLowerCase();
-                if (cityName.includes(input)) {
-                    city.style.display = '';
-                } else {
-                    city.style.display = 'none';
-                }
+                city.style.display = cityName.includes(input) ? '' : 'none';
             }
         }
 
-        // Initially populate the city list
         window.onload = populateCityList;
     </script>
 </body>
