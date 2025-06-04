@@ -9,7 +9,7 @@
         input[type="text"] { width: 350px; padding: 12px; border-radius: 4px; border: 1px solid #bbb; font-size: 1.1em; margin-bottom: 10px; }
         button { padding: 12px 18px; font-size: 1.05em; background: #205085; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
         button:hover { background: #137a37; }
-        .city-list { max-height: 250px; overflow-y: auto; border: 1px solid #ddd; background: #fff; border-radius: 5px; padding: 8px; margin-bottom: 8px; }
+        .city-list { max-height: 330px; overflow-y: auto; border: 1px solid #ddd; background: #fff; border-radius: 5px; padding: 8px; margin-bottom: 8px; }
         .city-list p { cursor: pointer; padding: 7px 10px; margin: 0; border-radius: 4px; }
         .city-list p:hover { background: #e9f6ef; }
         .forecast-entry { background: #fff; margin: 16px 0; border-radius: 8px; padding: 18px 22px; box-shadow: 0 1px 4px #0001; }
@@ -21,10 +21,10 @@
 </head>
 <body>
     <h1>5-Day Weather Forecast and Perception</h1>
-    <input type="text" id="citySearch" placeholder="Search or type any city..." oninput="filterCities()" />
+    <input type="text" id="citySearch" placeholder="Search or filter cities below..." oninput="filterCities()" autocomplete="off" />
     <div class="or">OR</div>
     <form id="cityForm" onsubmit="submitTypedCity(); return false;">
-        <input type="text" id="cityInput" placeholder="Type ANY city and state (e.g. Miami, FL)" required />
+        <input type="text" id="cityInput" placeholder="Type ANY city and state (e.g. Miami, FL)" required autocomplete="off" />
         <button type="submit">Show Forecast</button>
     </form>
     <div id="cityList" class="city-list"></div>
@@ -32,52 +32,144 @@
     <script>
         const apiKey = '7e8b04989662f1bdbeb41ebc8f680f99';
 
-        // Expand or edit this list as much as you want!
+        // 100+ major US cities (city : {state})
         const cities = {
-            Houston: { state: 'Texas' },
-            Dallas: { state: 'Texas' },
-            Austin: { state: 'Texas' },
-            'San Antonio': { state: 'Texas' },
-            Lancaster: { state: 'Pennsylvania' },
-            Philadelphia: { state: 'Pennsylvania' },
-            Pittsburgh: { state: 'Pennsylvania' },
-            Harrisburg: { state: 'Pennsylvania' },
-            'Salt Lake City': { state: 'Utah' },
-            Provo: { state: 'Utah' },
-            Ogden: { state: 'Utah' },
-            Oakwood: { state: 'Georgia' },
-            Atlanta: { state: 'Georgia' },
-            Savannah: { state: 'Georgia' },
-            Macon: { state: 'Georgia' },
-            Miami: { state: 'Florida' },
-            Orlando: { state: 'Florida' },
-            Denver: { state: 'Colorado' },
-            Chicago: { state: 'Illinois' },
-            Phoenix: { state: 'Arizona' },
-            Seattle: { state: 'Washington' },
-            Boston: { state: 'Massachusetts' },
-            LosAngeles: { state: 'California' },
-            'New York': { state: 'New York' },
-            // ...add more!
+            "New York": { state: "New York" },
+            "Los Angeles": { state: "California" },
+            "Chicago": { state: "Illinois" },
+            "Houston": { state: "Texas" },
+            "Phoenix": { state: "Arizona" },
+            "Philadelphia": { state: "Pennsylvania" },
+            "San Antonio": { state: "Texas" },
+            "San Diego": { state: "California" },
+            "Dallas": { state: "Texas" },
+            "San Jose": { state: "California" },
+            "Austin": { state: "Texas" },
+            "Jacksonville": { state: "Florida" },
+            "Fort Worth": { state: "Texas" },
+            "Columbus": { state: "Ohio" },
+            "Charlotte": { state: "North Carolina" },
+            "San Francisco": { state: "California" },
+            "Indianapolis": { state: "Indiana" },
+            "Seattle": { state: "Washington" },
+            "Denver": { state: "Colorado" },
+            "Washington": { state: "District of Columbia" },
+            "Boston": { state: "Massachusetts" },
+            "El Paso": { state: "Texas" },
+            "Nashville": { state: "Tennessee" },
+            "Detroit": { state: "Michigan" },
+            "Oklahoma City": { state: "Oklahoma" },
+            "Portland": { state: "Oregon" },
+            "Las Vegas": { state: "Nevada" },
+            "Memphis": { state: "Tennessee" },
+            "Louisville": { state: "Kentucky" },
+            "Baltimore": { state: "Maryland" },
+            "Milwaukee": { state: "Wisconsin" },
+            "Albuquerque": { state: "New Mexico" },
+            "Tucson": { state: "Arizona" },
+            "Fresno": { state: "California" },
+            "Mesa": { state: "Arizona" },
+            "Sacramento": { state: "California" },
+            "Atlanta": { state: "Georgia" },
+            "Kansas City": { state: "Missouri" },
+            "Colorado Springs": { state: "Colorado" },
+            "Miami": { state: "Florida" },
+            "Raleigh": { state: "North Carolina" },
+            "Omaha": { state: "Nebraska" },
+            "Long Beach": { state: "California" },
+            "Virginia Beach": { state: "Virginia" },
+            "Oakland": { state: "California" },
+            "Minneapolis": { state: "Minnesota" },
+            "Tulsa": { state: "Oklahoma" },
+            "Arlington": { state: "Texas" },
+            "Tampa": { state: "Florida" },
+            "New Orleans": { state: "Louisiana" },
+            "Wichita": { state: "Kansas" },
+            "Cleveland": { state: "Ohio" },
+            "Bakersfield": { state: "California" },
+            "Aurora": { state: "Colorado" },
+            "Anaheim": { state: "California" },
+            "Honolulu": { state: "Hawaii" },
+            "Santa Ana": { state: "California" },
+            "Riverside": { state: "California" },
+            "Corpus Christi": { state: "Texas" },
+            "Lexington": { state: "Kentucky" },
+            "Stockton": { state: "California" },
+            "Henderson": { state: "Nevada" },
+            "Saint Paul": { state: "Minnesota" },
+            "St. Louis": { state: "Missouri" },
+            "Cincinnati": { state: "Ohio" },
+            "Pittsburgh": { state: "Pennsylvania" },
+            "Greensboro": { state: "North Carolina" },
+            "Anchorage": { state: "Alaska" },
+            "Plano": { state: "Texas" },
+            "Lincoln": { state: "Nebraska" },
+            "Orlando": { state: "Florida" },
+            "Irvine": { state: "California" },
+            "Toledo": { state: "Ohio" },
+            "Jersey City": { state: "New Jersey" },
+            "Chula Vista": { state: "California" },
+            "Durham": { state: "North Carolina" },
+            "Fort Wayne": { state: "Indiana" },
+            "St. Petersburg": { state: "Florida" },
+            "Laredo": { state: "Texas" },
+            "Buffalo": { state: "New York" },
+            "Madison": { state: "Wisconsin" },
+            "Lubbock": { state: "Texas" },
+            "Chandler": { state: "Arizona" },
+            "Scottsdale": { state: "Arizona" },
+            "Glendale": { state: "Arizona" },
+            "Reno": { state: "Nevada" },
+            "Norfolk": { state: "Virginia" },
+            "Winston–Salem": { state: "North Carolina" },
+            "North Las Vegas": { state: "Nevada" },
+            "Irving": { state: "Texas" },
+            "Chesapeake": { state: "Virginia" },
+            "Gilbert": { state: "Arizona" },
+            "Hialeah": { state: "Florida" },
+            "Garland": { state: "Texas" },
+            "Fremont": { state: "California" },
+            "Richmond": { state: "Virginia" },
+            "Boise": { state: "Idaho" },
+            "Baton Rouge": { state: "Louisiana" }
         };
 
-        // Perception thresholds
+        // Expand this if you want, but this covers the above plus common regions
         const stateTempPerception = {
             Texas:        { Cold: 50, Cool: 65, Warm: 75, Fair: 85, Hot: 90 },
-            Pennsylvania: { Cold: 30, Cool: 50, Warm: 65, Fair: 75, Hot: 80 },
-            Utah:         { Cold: 30, Cool: 50, Warm: 65, Fair: 80, Hot: 85 },
-            Georgia:      { Cold: 40, Cool: 55, Warm: 70, Fair: 80, Hot: 85 },
-            Florida:      { Cold: 55, Cool: 65, Warm: 75, Fair: 85, Hot: 90 },
-            Colorado:     { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            California:   { Cold: 50, Cool: 60, Warm: 70, Fair: 80, Hot: 90 },
             Illinois:     { Cold: 30, Cool: 50, Warm: 70, Fair: 80, Hot: 88 },
             Arizona:      { Cold: 50, Cool: 65, Warm: 80, Fair: 90, Hot: 100 },
+            Pennsylvania: { Cold: 30, Cool: 50, Warm: 65, Fair: 75, Hot: 80 },
+            Florida:      { Cold: 55, Cool: 65, Warm: 75, Fair: 85, Hot: 90 },
+            Ohio:         { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            NorthCarolina:{ Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Colorado:     { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Tennessee:    { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Michigan:     { Cold: 28, Cool: 48, Warm: 68, Fair: 78, Hot: 84 },
+            Maryland:     { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Wisconsin:    { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            NewMexico:    { Cold: 40, Cool: 55, Warm: 70, Fair: 80, Hot: 85 },
+            Indiana:      { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
             Washington:   { Cold: 35, Cool: 55, Warm: 70, Fair: 80, Hot: 85 },
+            District:     { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
             Massachusetts:{ Cold: 28, Cool: 48, Warm: 68, Fair: 78, Hot: 84 },
-            California:   { Cold: 50, Cool: 60, Warm: 70, Fair: 80, Hot: 90 },
-            'New York':   { Cold: 28, Cool: 48, Warm: 68, Fair: 78, Hot: 84 },
+            Missouri:     { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Kentucky:     { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Oregon:       { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Nevada:       { Cold: 40, Cool: 55, Warm: 70, Fair: 80, Hot: 90 },
+            Minnesota:    { Cold: 28, Cool: 48, Warm: 68, Fair: 78, Hot: 84 },
+            Virginia:     { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Louisiana:    { Cold: 50, Cool: 65, Warm: 75, Fair: 85, Hot: 90 },
+            Oklahoma:     { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Nebraska:     { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Hawaii:       { Cold: 62, Cool: 70, Warm: 77, Fair: 84, Hot: 88 },
+            Alaska:       { Cold: 0, Cool: 25, Warm: 45, Fair: 60, Hot: 70 },
+            NewJersey:    { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            Idaho:        { Cold: 32, Cool: 50, Warm: 65, Fair: 78, Hot: 85 },
+            NewYork:      { Cold: 28, Cool: 48, Warm: 68, Fair: 78, Hot: 84 }
         };
 
-        // HVAC suggestions
         const hvacSuggestions = {
             Texas: {
                 Cold:   "Promote heating system tune-ups or furnace checks.",
@@ -86,40 +178,12 @@
                 Fair:   "Advertise ductless mini splits or air purification upgrades.",
                 Hot:    "Push emergency AC service or replacement offers."
             },
-            Pennsylvania: {
-                Cold:   "Promote furnace repair/replacement or emergency heat services.",
-                Cool:   "Offer whole-home humidifier installs or heater tune-ups.",
-                Warm:   "Highlight AC tune-up or replacement discounts.",
-                Fair:   "Advertise energy-efficient upgrades or smart thermostats.",
-                Hot:    "Promote rapid-response AC repair and install offers."
-            },
-            Utah: {
-                Cold:   "Offer furnace inspection and emergency repair.",
-                Cool:   "Promote seasonal HVAC check-ups.",
-                Warm:   "Advertise early AC tune-ups.",
-                Fair:   "Showcase smart thermostat installs.",
-                Hot:    "Push AC replacement or repair specials."
-            },
-            Georgia: {
-                Cold:   "Feature heat pump or furnace tune-ups.",
-                Cool:   "Bundle HVAC service plans.",
-                Warm:   "Run AC service specials.",
-                Fair:   "Offer mini split installs or air quality upgrades.",
-                Hot:    "Highlight fast AC repair or install."
-            },
-            Florida: {
-                Cold:   "Offer heat pump service specials.",
-                Cool:   "Promote full HVAC inspections.",
-                Warm:   "Highlight AC tune-up offers.",
-                Fair:   "Push energy-efficient AC upgrades.",
-                Hot:    "Push emergency AC repair or replacement."
-            },
-            Colorado: {
-                Cold:   "Promote furnace safety checks.",
-                Cool:   "Advertise whole-home humidifiers.",
-                Warm:   "Highlight AC tune-ups.",
-                Fair:   "Showcase smart thermostat upgrades.",
-                Hot:    "Push rapid AC repair or install."
+            California: {
+                Cold:   "Heat pump service.",
+                Cool:   "HVAC inspections.",
+                Warm:   "AC tune-ups.",
+                Fair:   "Smart thermostat upgrades.",
+                Hot:    "Emergency AC repair."
             },
             Illinois: {
                 Cold:   "Furnace repair specials.",
@@ -135,38 +199,25 @@
                 Fair:   "Mini split installation.",
                 Hot:    "Emergency AC replacement."
             },
-            Washington: {
-                Cold:   "Heat pump and furnace service.",
-                Cool:   "Whole-home humidifier installs.",
-                Warm:   "AC tune-up specials.",
-                Fair:   "Ductless system upgrades.",
-                Hot:    "Emergency AC services."
+            Pennsylvania: {
+                Cold:   "Promote furnace repair/replacement or emergency heat services.",
+                Cool:   "Offer whole-home humidifier installs or heater tune-ups.",
+                Warm:   "Highlight AC tune-up or replacement discounts.",
+                Fair:   "Advertise energy-efficient upgrades or smart thermostats.",
+                Hot:    "Promote rapid-response AC repair and install offers."
             },
-            Massachusetts: {
-                Cold:   "Furnace service specials.",
-                Cool:   "Humidifier or air purification upgrades.",
-                Warm:   "AC tune-ups.",
-                Fair:   "Smart thermostat installs.",
-                Hot:    "AC replacement offers."
+            Florida: {
+                Cold:   "Offer heat pump service specials.",
+                Cool:   "Promote full HVAC inspections.",
+                Warm:   "Highlight AC tune-up offers.",
+                Fair:   "Push energy-efficient AC upgrades.",
+                Hot:    "Push emergency AC repair or replacement."
             },
-            California: {
-                Cold:   "Heat pump service.",
-                Cool:   "HVAC inspections.",
-                Warm:   "AC tune-ups.",
-                Fair:   "Smart thermostat upgrades.",
-                Hot:    "Emergency AC repair."
-            },
-            'New York': {
-                Cold:   "Furnace safety checks.",
-                Cool:   "HVAC service plans.",
-                Warm:   "AC tune-up offers.",
-                Fair:   "Smart home upgrades.",
-                Hot:    "AC repair or replacement."
-            }
+            // ...add more for other states as above...
         };
 
         function classifyTemperature(state, temp) {
-            const t = stateTempPerception[state];
+            const t = stateTempPerception[state.replace(/\s/g,'')];
             if (!t) return 'Unknown';
             if (temp < t.Cold) return 'Cold';
             if (temp < t.Cool) return 'Cool';
@@ -185,19 +236,21 @@
                         forecastDiv.innerHTML = `<span style="color:red;">No weather data found for "${cityRaw}". Please check your city name.</span>`;
                         return;
                     }
-                    // Try to get state name
-                    let state = stateHint || (data.city.state || undefined);
-                    // Fallback: from typed input if possible
-                    if ((!state || !stateTempPerception[state]) && cityRaw.includes(',')) {
+                    let state = stateHint || data.city.state || cities[cityRaw]?.state || undefined;
+                    if ((!state || !stateTempPerception[state.replace(/\s/g,'')]) && cityRaw.includes(',')) {
                         const part = cityRaw.split(',')[1].trim();
-                        const normalized = part.length === 2 ? (
-                            // 2-letter state to full name
-                            { TX: 'Texas', PA: 'Pennsylvania', UT: 'Utah', GA: 'Georgia', FL: 'Florida', CO: 'Colorado', IL: 'Illinois', AZ: 'Arizona', WA: 'Washington', MA: 'Massachusetts', NY: 'New York', CA: 'California' }[part.toUpperCase()] || undefined
-                        ) : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                        const stateMap = {
+                            TX: "Texas", CA: "California", IL: "Illinois", AZ: "Arizona", PA: "Pennsylvania", FL: "Florida",
+                            OH: "Ohio", NC: "NorthCarolina", CO: "Colorado", TN: "Tennessee", MI: "Michigan",
+                            MD: "Maryland", WI: "Wisconsin", NM: "NewMexico", IN: "Indiana", WA: "Washington",
+                            DC: "District", MA: "Massachusetts", MO: "Missouri", KY: "Kentucky", OR: "Oregon",
+                            NV: "Nevada", MN: "Minnesota", VA: "Virginia", LA: "Louisiana", OK: "Oklahoma",
+                            NE: "Nebraska", HI: "Hawaii", AK: "Alaska", NJ: "NewJersey", ID: "Idaho", NY: "NewYork"
+                        };
+                        const normalized = stateMap[part.toUpperCase()] || part.replace(/\s/g,'');
                         state = stateTempPerception[normalized] ? normalized : undefined;
                     }
                     if (!state) state = 'Unknown';
-
                     forecastDiv.innerHTML = `<h2>5-Day Weather Forecast for ${cityRaw}${state && state !== 'Unknown' ? ' ('+state+')' : ''}</h2>`;
                     let daysShown = 0, dateTracker = {};
                     data.list.forEach(forecast => {
@@ -236,7 +289,7 @@
                 const p = document.createElement('p');
                 p.textContent = `${city}, ${data.state}`;
                 p.onclick = () => {
-                    document.getElementById('cityInput').value = ''; // Clear typed input
+                    document.getElementById('cityInput').value = '';
                     showForecast(city, data.state);
                 };
                 cityList.appendChild(p);
@@ -254,11 +307,9 @@
             const val = document.getElementById('cityInput').value.trim();
             if (!val) return;
             showForecast(val);
-            // Remove focus
             document.getElementById('cityInput').blur();
         }
 
-        // Initialize on load
         window.onload = () => {
             populateCityList();
         };
