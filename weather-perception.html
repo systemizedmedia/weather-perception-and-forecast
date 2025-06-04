@@ -6,22 +6,26 @@
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 30px; }
         h1 { color: #2c3e50; }
-        #cityList p { cursor: pointer; background: #fff; padding: 7px; margin: 2px 0; border-radius: 5px; }
-        #cityList p:hover { background: #eee; }
-        .forecast-entry { background: #fff; margin: 10px 0; border-radius: 8px; padding: 16px 20px; box-shadow: 0 1px 4px #0001; }
+        input[type="text"] { width: 350px; padding: 12px; border-radius: 4px; border: 1px solid #bbb; font-size: 1.1em; margin-bottom: 10px; }
+        button { padding: 12px 18px; font-size: 1.05em; background: #205085; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #137a37; }
+        .forecast-entry { background: #fff; margin: 16px 0; border-radius: 8px; padding: 18px 22px; box-shadow: 0 1px 4px #0001; }
         .forecast-entry strong { color: #137a37; }
         .suggestion { font-weight: bold; color: #205085; }
+        #forecast { margin-top: 28px; }
     </style>
 </head>
 <body>
     <h1>5-Day Weather Forecast and Perception</h1>
-    <input type="text" id="citySearch" placeholder="Search for a city..." oninput="filterCities()" />
-    <div id="cityList"></div>
+    <form id="cityForm" onsubmit="getForecast(); return false;">
+        <input type="text" id="cityInput" placeholder="Enter any US city (e.g. Dallas, TX)" required />
+        <button type="submit">Show Forecast</button>
+    </form>
     <div id="forecast"></div>
     <script>
         const apiKey = '7e8b04989662f1bdbeb41ebc8f680f99';
 
-        // State perception thresholds
+        // Perception thresholds by state (you can expand as needed)
         const stateTempPerception = {
             Texas:        { Cold: 50, Cool: 65, Warm: 75, Fair: 85, Hot: 90 },
             Pennsylvania: { Cold: 30, Cool: 50, Warm: 65, Fair: 75, Hot: 80 },
@@ -29,7 +33,7 @@
             Georgia:      { Cold: 40, Cool: 55, Warm: 70, Fair: 80, Hot: 85 }
         };
 
-        // Offer suggestions
+        // Offer suggestions by state/perception
         const hvacSuggestions = {
             Texas: {
                 Cold:   "Promote heating system tune-ups or furnace checks.",
@@ -61,15 +65,25 @@
             }
         };
 
-        // Cities
-        const cities = {
-            Houston: { state: 'Texas' },
-            Lancaster: { state: 'Pennsylvania' },
-            'Salt Lake City': { state: 'Utah' },
-            Oakwood: { state: 'Georgia' }
-        };
+        // State extractor from OpenWeatherMap API result
+        function extractState(data) {
+            // Sometimes OWM returns 'state' in city or sys; often you need to map from city name to state (best effort here)
+            // We'll try city.name, then maybe in the data there's 'state' (sometimes for US), else fallback to unknown
+            if (data && data.city && data.city.state) return data.city.state;
+            if (data && data.city && data.city.name) {
+                // Simple mapping for demo; expand as needed for your audience
+                const cityName = data.city.name;
+                const lookup = {
+                    Houston: 'Texas', Dallas: 'Texas', Austin: 'Texas', 'San Antonio': 'Texas',
+                    Lancaster: 'Pennsylvania', Philadelphia: 'Pennsylvania', Pittsburgh: 'Pennsylvania', Harrisburg: 'Pennsylvania',
+                    'Salt Lake City': 'Utah', Provo: 'Utah', Ogden: 'Utah',
+                    Oakwood: 'Georgia', Atlanta: 'Georgia', Savannah: 'Georgia'
+                };
+                return lookup[cityName] || 'Unknown';
+            }
+            return 'Unknown';
+        }
 
-        // Perception logic
         function classifyTemperature(state, temp) {
             const t = stateTempPerception[state];
             if (!t) return 'Unknown';
@@ -80,37 +94,32 @@
             return 'Hot';
         }
 
-        // City list UI
-        function populateCityList() {
-            const cityList = document.getElementById('cityList');
-            cityList.innerHTML = '';
-            Object.entries(cities).forEach(([city, data]) => {
-                const p = document.createElement('p');
-                p.textContent = `${city}, ${data.state}`;
-                p.onclick = () => fetchWeather(city, data.state);
-                cityList.appendChild(p);
-            });
-        }
-
-        // City search
-        function filterCities() {
-            const val = document.getElementById('citySearch').value.toLowerCase();
-            document.querySelectorAll('#cityList p').forEach(p => {
-                p.style.display = p.textContent.toLowerCase().includes(val) ? '' : 'none';
-            });
-        }
-
-        // Main forecast logic
-        function fetchWeather(cityName, state) {
+        function getForecast() {
+            const cityRaw = document.getElementById('cityInput').value.trim();
+            const city = encodeURIComponent(cityRaw);
+            const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=imperial`;
             const forecastDiv = document.getElementById('forecast');
-            forecastDiv.innerHTML = `<h2>5-Day Weather Forecast for ${cityName}, ${state}</h2>`;
-            fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${apiKey}&units=imperial`)
-                .then(res => res.json())
+            forecastDiv.innerHTML = `<h2>Loading forecast for ${cityRaw}...</h2>`;
+            fetch(url)
+                .then(r => r.json())
                 .then(data => {
-                    if (!data.list) {
-                        forecastDiv.innerHTML += `<div class="forecast-entry"><span style="color:red">No forecast data found.</span></div>`;
+                    if (!data.city || !data.list) {
+                        forecastDiv.innerHTML = `<span style="color:red;">No weather data found for "${cityRaw}". Please check your city name.</span>`;
                         return;
                     }
+                    // Get state if possible (for HVAC offer)
+                    let state = extractState(data);
+                    // If state is still 'Unknown', try to extract from input, e.g. "Dallas, TX" or "Atlanta, Georgia"
+                    if (state === 'Unknown' && cityRaw.includes(',')) {
+                        const part = cityRaw.split(',')[1].trim();
+                        const normalized = part.length === 2 ? (
+                            // 2-letter state to full name
+                            { TX: 'Texas', PA: 'Pennsylvania', UT: 'Utah', GA: 'Georgia' }[part.toUpperCase()] || 'Unknown'
+                        ) : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                        state = stateTempPerception[normalized] ? normalized : 'Unknown';
+                    }
+                    forecastDiv.innerHTML = `<h2>5-Day Weather Forecast for ${cityRaw} (${state})</h2>`;
+
                     let daysShown = 0, dateTracker = {};
                     data.list.forEach(forecast => {
                         const dt = new Date(forecast.dt * 1000);
@@ -120,7 +129,7 @@
                             daysShown++;
                             const temp = forecast.main.temp;
                             const perception = classifyTemperature(state, temp);
-                            let suggestion = 'No suggestion found.';
+                            let suggestion = 'No suggestion found for this area/weather.';
                             if (hvacSuggestions[state] && hvacSuggestions[state][perception]) {
                                 suggestion = hvacSuggestions[state][perception];
                             }
@@ -136,12 +145,10 @@
                         }
                     });
                 })
-                .catch(error => {
-                    forecastDiv.innerHTML += `<div class="forecast-entry"><span style="color:red">Failed to fetch forecast.</span></div>`;
+                .catch(() => {
+                    forecastDiv.innerHTML = `<span style="color:red;">Could not fetch forecast. Please try again later.</span>`;
                 });
         }
-
-        window.onload = populateCityList;
     </script>
 </body>
 </html>
