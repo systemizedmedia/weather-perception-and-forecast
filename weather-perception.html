@@ -32,218 +32,467 @@
     <script>
         const apiKey = '7e8b04989662f1bdbeb41ebc8f680f99';
 
-        // Top 100 US cities (city : {state})
-        const cities = {
-            "New York": { state: "New York" },
-            "Los Angeles": { state: "California" },
-            "Chicago": { state: "Illinois" },
-            "Houston": { state: "Texas" },
-            "Phoenix": { state: "Arizona" },
-            "Philadelphia": { state: "Pennsylvania" },
-            "San Antonio": { state: "Texas" },
-            "San Diego": { state: "California" },
-            "Dallas": { state: "Texas" },
-            "San Jose": { state: "California" },
-            "Austin": { state: "Texas" },
-            "Jacksonville": { state: "Florida" },
-            "Fort Worth": { state: "Texas" },
-            "Columbus": { state: "Ohio" },
-            "Charlotte": { state: "North Carolina" },
-            "San Francisco": { state: "California" },
-            "Indianapolis": { state: "Indiana" },
-            "Seattle": { state: "Washington" },
-            "Denver": { state: "Colorado" },
-            "Washington": { state: "District of Columbia" },
-            "Boston": { state: "Massachusetts" },
-            "El Paso": { state: "Texas" },
-            "Nashville": { state: "Tennessee" },
-            "Detroit": { state: "Michigan" },
-            "Oklahoma City": { state: "Oklahoma" },
-            "Portland": { state: "Oregon" },
-            "Las Vegas": { state: "Nevada" },
-            "Memphis": { state: "Tennessee" },
-            "Louisville": { state: "Kentucky" },
-            "Baltimore": { state: "Maryland" },
-            "Milwaukee": { state: "Wisconsin" },
-            "Albuquerque": { state: "New Mexico" },
-            "Tucson": { state: "Arizona" },
-            "Fresno": { state: "California" },
-            "Mesa": { state: "Arizona" },
-            "Sacramento": { state: "California" },
-            "Atlanta": { state: "Georgia" },
-            "Kansas City": { state: "Missouri" },
-            "Colorado Springs": { state: "Colorado" },
-            "Miami": { state: "Florida" },
-            "Raleigh": { state: "North Carolina" },
-            "Omaha": { state: "Nebraska" },
-            "Long Beach": { state: "California" },
-            "Virginia Beach": { state: "Virginia" },
-            "Oakland": { state: "California" },
-            "Minneapolis": { state: "Minnesota" },
-            "Tulsa": { state: "Oklahoma" },
-            "Arlington": { state: "Texas" },
-            "Tampa": { state: "Florida" },
-            "New Orleans": { state: "Louisiana" },
-            "Wichita": { state: "Kansas" },
-            "Cleveland": { state: "Ohio" },
-            "Bakersfield": { state: "California" },
-            "Aurora": { state: "Colorado" },
-            "Anaheim": { state: "California" },
-            "Honolulu": { state: "Hawaii" },
-            "Santa Ana": { state: "California" },
-            "Riverside": { state: "California" },
-            "Corpus Christi": { state: "Texas" },
-            "Lexington": { state: "Kentucky" },
-            "Stockton": { state: "California" },
-            "Henderson": { state: "Nevada" },
-            "Saint Paul": { state: "Minnesota" },
-            "St. Louis": { state: "Missouri" },
-            "Cincinnati": { state: "Ohio" },
-            "Pittsburgh": { state: "Pennsylvania" },
-            "Greensboro": { state: "North Carolina" },
-            "Anchorage": { state: "Alaska" },
-            "Plano": { state: "Texas" },
-            "Lincoln": { state: "Nebraska" },
-            "Orlando": { state: "Florida" },
-            "Irvine": { state: "California" },
-            "Toledo": { state: "Ohio" },
-            "Jersey City": { state: "New Jersey" },
-            "Chula Vista": { state: "California" },
-            "Durham": { state: "North Carolina" },
-            "Fort Wayne": { state: "Indiana" },
-            "St. Petersburg": { state: "Florida" },
-            "Laredo": { state: "Texas" },
-            "Buffalo": { state: "New York" },
-            "Madison": { state: "Wisconsin" },
-            "Lubbock": { state: "Texas" },
-            "Chandler": { state: "Arizona" },
-            "Scottsdale": { state: "Arizona" },
-            "Glendale": { state: "Arizona" },
-            "Reno": { state: "Nevada" },
-            "Norfolk": { state: "Virginia" },
-            "Winston–Salem": { state: "North Carolina" },
-            "North Las Vegas": { state: "Nevada" },
-            "Irving": { state: "Texas" },
-            "Chesapeake": { state: "Virginia" },
-            "Gilbert": { state: "Arizona" },
-            "Hialeah": { state: "Florida" },
-            "Garland": { state: "Texas" },
-            "Fremont": { state: "California" },
-            "Richmond": { state: "Virginia" },
-            "Boise": { state: "Idaho" },
-            "Baton Rouge": { state: "Louisiana" }
-        };
-
-        // Per-state perception thresholds (for "fair" as the "sweet spot" zone)
+        // Your provided stateTempPerception object
         const stateTempPerception = {
-            Texas:        { Cold: 50, Cool: 65, Fair: 75, Warm: 85, Hot: 100 },
-            California:   { Cold: 50, Cool: 62, Fair: 72, Warm: 82, Hot: 100 },
-            Illinois:     { Cold: 32, Cool: 55, Fair: 70, Warm: 80, Hot: 100 },
-            Arizona:      { Cold: 50, Cool: 65, Fair: 77, Warm: 87, Hot: 100 },
-            Pennsylvania: { Cold: 35, Cool: 55, Fair: 72, Warm: 82, Hot: 100 },
-            Florida:      { Cold: 60, Cool: 68, Fair: 77, Warm: 86, Hot: 100 },
-            Ohio:         { Cold: 35, Cool: 55, Fair: 70, Warm: 80, Hot: 100 },
-            "North Carolina":{ Cold: 35, Cool: 56, Fair: 72, Warm: 83, Hot: 100 },
-            Georgia:      { Cold: 40, Cool: 58, Fair: 75, Warm: 85, Hot: 100 },
-            Colorado:     { Cold: 32, Cool: 53, Fair: 72, Warm: 82, Hot: 100 },
-            Tennessee:    { Cold: 38, Cool: 58, Fair: 73, Warm: 83, Hot: 100 },
-            Michigan:     { Cold: 30, Cool: 50, Fair: 68, Warm: 80, Hot: 100 },
-            Maryland:     { Cold: 38, Cool: 55, Fair: 70, Warm: 80, Hot: 100 },
-            Wisconsin:    { Cold: 28, Cool: 48, Fair: 65, Warm: 75, Hot: 100 },
-            "New Mexico": { Cold: 45, Cool: 62, Fair: 75, Warm: 85, Hot: 100 },
-            Indiana:      { Cold: 34, Cool: 54, Fair: 70, Warm: 80, Hot: 100 },
-            Washington:   { Cold: 37, Cool: 55, Fair: 70, Warm: 80, Hot: 100 },
-            "District of Columbia": { Cold: 38, Cool: 56, Fair: 72, Warm: 82, Hot: 100 },
-            Massachusetts:{ Cold: 34, Cool: 54, Fair: 68, Warm: 78, Hot: 100 },
-            Missouri:     { Cold: 35, Cool: 54, Fair: 72, Warm: 82, Hot: 100 },
-            Kentucky:     { Cold: 36, Cool: 54, Fair: 70, Warm: 80, Hot: 100 },
-            Oregon:       { Cold: 38, Cool: 55, Fair: 68, Warm: 78, Hot: 100 },
-            Nevada:       { Cold: 46, Cool: 60, Fair: 75, Warm: 85, Hot: 100 },
-            Minnesota:    { Cold: 27, Cool: 44, Fair: 62, Warm: 77, Hot: 100 },
-            Virginia:     { Cold: 39, Cool: 58, Fair: 74, Warm: 83, Hot: 100 },
-            Louisiana:    { Cold: 55, Cool: 67, Fair: 76, Warm: 85, Hot: 100 },
-            Oklahoma:     { Cold: 41, Cool: 58, Fair: 72, Warm: 83, Hot: 100 },
-            Nebraska:     { Cold: 30, Cool: 50, Fair: 69, Warm: 80, Hot: 100 },
-            Hawaii:       { Cold: 65, Cool: 70, Fair: 76, Warm: 84, Hot: 100 },
-            Alaska:       { Cold: 5, Cool: 30, Fair: 60, Warm: 72, Hot: 100 },
-            "New Jersey": { Cold: 38, Cool: 54, Fair: 70, Warm: 78, Hot: 100 },
-            Idaho:        { Cold: 29, Cool: 50, Fair: 67, Warm: 78, Hot: 100 },
-            "New York":   { Cold: 34, Cool: 53, Fair: 68, Warm: 78, Hot: 100 },
-            Default:      { Cold: 40, Cool: 60, Fair: 72, Warm: 82, Hot: 100 }
+          Texas:        { Cold: 50, Cool: 63, Fair: 71, Warm: 79, Hot: 100 },
+          California:   { Cold: 50, Cool: 65, Fair: 72, Warm: 79, Hot: 100 },
+          Illinois:     { Cold: 32, Cool: 63, Fair: 70, Warm: 77, Hot: 100 },
+          Arizona:      { Cold: 50, Cool: 65, Fair: 73, Warm: 81, Hot: 100 },
+          Pennsylvania: { Cold: 35, Cool: 65, Fair: 72, Warm: 79, Hot: 100 },
+          Florida:      { Cold: 60, Cool: 68, Fair: 77, Warm: 84, Hot: 100 },
+          Ohio:         { Cold: 35, Cool: 63, Fair: 70, Warm: 77, Hot: 100 },
+          "North Carolina": { Cold: 35, Cool: 65, Fair: 72, Warm: 79, Hot: 100 },
+          Georgia:      { Cold: 40, Cool: 67, Fair: 75, Warm: 82, Hot: 100 },
+          Colorado:     { Cold: 32, Cool: 65, Fair: 72, Warm: 79, Hot: 100 },
+          Tennessee:    { Cold: 38, Cool: 65, Fair: 73, Warm: 80, Hot: 100 },
+          Michigan:     { Cold: 30, Cool: 60, Fair: 68, Warm: 76, Hot: 100 },
+          Maryland:     { Cold: 38, Cool: 63, Fair: 70, Warm: 77, Hot: 100 },
+          Wisconsin:    { Cold: 28, Cool: 57, Fair: 65, Warm: 73, Hot: 100 },
+          "New Mexico": { Cold: 45, Cool: 67, Fair: 75, Warm: 83, Hot: 100 },
+          Indiana:      { Cold: 34, Cool: 63, Fair: 70, Warm: 77, Hot: 100 },
+          Washington:   { Cold: 37, Cool: 63, Fair: 70, Warm: 77, Hot: 100 },
+          "District of Columbia": { Cold: 38, Cool: 65, Fair: 72, Warm: 79, Hot: 100 },
+          Massachusetts:{ Cold: 34, Cool: 61, Fair: 68, Warm: 75, Hot: 100 },
+          Missouri:     { Cold: 35, Cool: 64, Fair: 72, Warm: 80, Hot: 100 },
+          Kentucky:     { Cold: 36, Cool: 63, Fair: 70, Warm: 77, Hot: 100 },
+          Oregon:       { Cold: 38, Cool: 61, Fair: 68, Warm: 75, Hot: 100 },
+          Nevada:       { Cold: 46, Cool: 67, Fair: 75, Warm: 83, Hot: 100 },
+          Minnesota:    { Cold: 27, Cool: 54, Fair: 62, Warm: 70, Hot: 100 },
+          Virginia:     { Cold: 39, Cool: 66, Fair: 74, Warm: 81, Hot: 100 },
+          Louisiana:    { Cold: 55, Cool: 68, Fair: 76, Warm: 83, Hot: 100 },
+          Oklahoma:     { Cold: 41, Cool: 65, Fair: 72, Warm: 79, Hot: 100 },
+          Nebraska:     { Cold: 30, Cool: 61, Fair: 69, Warm: 77, Hot: 100 },
+          Hawaii:       { Cold: 65, Cool: 70, Fair: 76, Warm: 84, Hot: 100 },
+          Alaska:       { Cold: 5,  Cool: 30, Fair: 60, Warm: 72, Hot: 100 },
+          "New Jersey": { Cold: 38, Cool: 63, Fair: 70, Warm: 77, Hot: 100 },
+          Idaho:        { Cold: 29, Cool: 59, Fair: 67, Warm: 75, Hot: 100 },
+          "New York":   { Cold: 34, Cool: 61, Fair: 68, Warm: 75, Hot: 100 },
+          Alabama:      { Cold: 42, Cool: 64, Fair: 73, Warm: 81, Hot: 100 },
+          Arkansas:     { Cold: 40, Cool: 63, Fair: 72, Warm: 80, Hot: 100 },
+          Connecticut:  { Cold: 34, Cool: 61, Fair: 68, Warm: 75, Hot: 100 },
+          Delaware:     { Cold: 36, Cool: 62, Fair: 70, Warm: 78, Hot: 100 },
+          Iowa:         { Cold: 30, Cool: 60, Fair: 68, Warm: 76, Hot: 100 },
+          Kansas:       { Cold: 33, Cool: 61, Fair: 70, Warm: 78, Hot: 100 },
+          Maine:        { Cold: 28, Cool: 55, Fair: 65, Warm: 73, Hot: 100 },
+          Mississippi:  { Cold: 50, Cool: 66, Fair: 74, Warm: 82, Hot: 100 },
+          Montana:      { Cold: 20, Cool: 50, Fair: 65, Warm: 75, Hot: 100 },
+          "New Hampshire": { Cold: 32, Cool: 58, Fair: 66, Warm: 74, Hot: 100 },
+          "North Dakota":  { Cold: 15, Cool: 45, Fair: 60, Warm: 70, Hot: 100 },
+          "Rhode Island":  { Cold: 35, Cool: 60, Fair: 68, Warm: 75, Hot: 100 },
+          "South Carolina":{ Cold: 40, Cool: 63, Fair: 72, Warm: 80, Hot: 100 },
+          "South Dakota":  { Cold: 25, Cool: 55, Fair: 65, Warm: 73, Hot: 100 },
+          Utah:         { Cold: 35, Cool: 60, Fair: 70, Warm: 78, Hot: 100 },
+          Vermont:      { Cold: 30, Cool: 57, Fair: 65, Warm: 73, Hot: 100 },
+          "West Virginia":{ Cold: 35, Cool: 60, Fair: 70, Warm: 78, Hot: 100 },
+          Wyoming:      { Cold: 25, Cool: 55, Fair: 65, Warm: 73, Hot: 100 },
+          Default:      { Cold: 40, Cool: 60, Fair: 72, Warm: 82, Hot: 100 }
         };
 
-        // HVAC suggestions per state and perception (or fallback to Default)
+        // HVAC suggestions for each state and perception band. 
+        // Suggestions reflect climate and make sense for "fair" (outdoor, mild, not too cold/hot).
+        // You can expand/edit these anytime.
         const hvacSuggestions = {
             Default: {
-                Cold: "Offer furnace/heat pump service or insulation check.",
-                Cool: "Promote dual HVAC tune-ups for spring/fall.",
-                Fair: "Promote air quality add-ons or service plans—remind customers it's perfect weather to get a system check.",
-                Warm: "Highlight early AC tune-up/cleaning specials.",
-                Hot: "Push emergency AC repair and high-efficiency AC install."
+                Cold: "Bundle furnace or heat pump check-ups with insulation evaluation.",
+                Cool: "Offer pre-season HVAC tune-up specials (heating/cooling).",
+                Fair: "Promote air purification, maintenance plans, or smart thermostats.",
+                Warm: "Highlight AC tune-up and filter change specials.",
+                Hot: "Advertise fast-response AC repair and high-efficiency system installs."
             },
             Texas: {
-                Cold:   "Promote heating system tune-ups or furnace checks.",
-                Cool:   "Offer dual HVAC system checkups (heating & AC).",
-                Fair:   "Great weather! Suggest system tune-up or air purifier specials.",
-                Warm:   "Highlight pre-season AC maintenance specials.",
-                Hot:    "Push emergency AC service or replacement offers."
+                Cold:   "Promote heat pump or furnace tune-ups, especially for rare cold snaps.",
+                Cool:   "Dual-system tune-ups (heating + AC) at a discount.",
+                Fair:   "Perfect weather—suggest duct cleaning, air quality add-ons, or maintenance plans.",
+                Warm:   "Early bird AC tune-up specials and smart thermostat installs.",
+                Hot:    "Emergency AC service/replacement and energy-saving AC upgrades."
             },
             California: {
-                Cold:   "Heat pump or furnace service specials.",
-                Cool:   "Full system inspections for seasonal change.",
-                Fair:   "Suggest air quality upgrades or maintenance plans.",
-                Warm:   "AC tune-ups and duct cleaning offers.",
-                Hot:    "Emergency AC repair or install."
+                Cold:   "Promote furnace or mini-split heating checks, especially for coastal cool.",
+                Cool:   "Seasonal HVAC inspections and air quality upgrades.",
+                Fair:   "Perfect for whole-home air purifiers or energy audits.",
+                Warm:   "AC tune-up offers; check ductless systems.",
+                Hot:    "Highlight emergency AC repair, eco-friendly systems, and UV/IAQ upgrades."
             },
             Florida: {
-                Cold:   "Promote heat pump or system check-up.",
-                Cool:   "Promote HVAC inspection and service bundle.",
-                Fair:   "Perfect weather for air purifier or maintenance plans.",
-                Warm:   "AC tune-up and efficiency offers.",
-                Hot:    "Emergency AC repair or install."
+                Cold:   "Heat pump check-ups for rare chilly mornings.",
+                Cool:   "Maintenance bundles for heat pumps and AC.",
+                Fair:   "Maintenance plans, air purifier, or dehumidifier add-ons.",
+                Warm:   "Promote AC tune-up and drain line checks.",
+                Hot:    "Push rapid AC repair and high-efficiency replacements."
             },
             Pennsylvania: {
-                Cold:   "Promote furnace repair or emergency heat services.",
-                Cool:   "Humidifier installs or heater tune-ups.",
-                Fair:   "Recommend maintenance plan sign-up or IAQ upgrades.",
-                Warm:   "AC tune-up or replacement discounts.",
-                Hot:    "Emergency AC repair and install."
+                Cold:   "Furnace/hot water boiler service; emergency heating repair.",
+                Cool:   "Humidifier installation or early AC inspection.",
+                Fair:   "Recommend duct/IAQ cleaning or smart thermostat upgrades.",
+                Warm:   "AC tune-up, filter replacement, pre-summer energy audit.",
+                Hot:    "Emergency AC repair and fast replacement specials."
             },
             Illinois: {
-                Cold:   "Furnace and humidifier service specials.",
-                Cool:   "Promote dual tune-up offer.",
-                Fair:   "Air quality and system maintenance reminders.",
-                Warm:   "AC pre-season tune-up.",
-                Hot:    "Emergency AC service."
+                Cold:   "Furnace/humidifier specials; recommend winterization.",
+                Cool:   "Dual heating/AC maintenance, air quality packages.",
+                Fair:   "Duct sealing, air purifier, or smart thermostat offers.",
+                Warm:   "AC tune-up and system cleaning.",
+                Hot:    "Advertise quick-response AC repairs and installs."
             },
             Arizona: {
-                Cold:   "Offer heating system check (rare in AZ!).",
-                Cool:   "Promote dual season checkups.",
-                Fair:   "Perfect for ductless or IAQ upgrades.",
-                Warm:   "AC tune-up or coil cleaning.",
-                Hot:    "Emergency AC replacement."
+                Cold:   "Furnace or heat pump maintenance for chilly desert nights.",
+                Cool:   "Full-system tune-ups before the heat arrives.",
+                Fair:   "Ductless mini-split install specials, IAQ upgrades.",
+                Warm:   "AC check-ups, evaporator coil and refrigerant checks.",
+                Hot:    "High-efficiency AC offers and emergency service."
             },
             "North Carolina": {
-                Cold:   "Furnace or heat pump inspection.",
-                Cool:   "Full HVAC checkup.",
-                Fair:   "Maintenance plans and air quality specials.",
-                Warm:   "AC tune-up or coil cleaning.",
-                Hot:    "Emergency AC repair/install."
+                Cold:   "Promote furnace/heat pump safety inspection.",
+                Cool:   "Dual HVAC tune-up specials.",
+                Fair:   "Duct/vent cleaning, maintenance plans, IAQ promos.",
+                Warm:   "Early AC tune-up, filter changes.",
+                Hot:    "Fast AC repair and replacement offers."
             },
             Georgia: {
-                Cold:   "Furnace/heat pump tune-up.",
-                Cool:   "HVAC inspection and cleaning.",
-                Fair:   "Best weather for system maintenance or smart thermostats.",
-                Warm:   "AC tune-up specials.",
-                Hot:    "Emergency AC repair or install."
+                Cold:   "Heat pump/furnace check with filter swap.",
+                Cool:   "Whole-home maintenance packages.",
+                Fair:   "Suggest air purification, duct cleaning, or a smart thermostat.",
+                Warm:   "Pre-summer AC check-ups.",
+                Hot:    "Emergency AC repair/replace with energy savings focus."
             },
-            NewYork: {
-                Cold:   "Furnace and heating system check.",
-                Cool:   "Promote humidifier or IAQ upgrade.",
-                Fair:   "Maintenance plan, smart thermostat or duct cleaning.",
-                Warm:   "AC tune-up or pre-season offers.",
-                Hot:    "Emergency AC repair or replacement."
+            Ohio: {
+                Cold:   "Furnace or boiler tune-up and humidity control.",
+                Cool:   "HVAC check and duct cleaning combo.",
+                Fair:   "Sign up for a maintenance plan or IAQ upgrade.",
+                Warm:   "AC tune-up and smart thermostat promo.",
+                Hot:    "Fast AC repair and replacement."
+            },
+            Colorado: {
+                Cold:   "Furnace/boiler inspection and humidity check.",
+                Cool:   "Dual system tune-ups; allergy season air purifier offers.",
+                Fair:   "Whole-house IAQ and smart thermostat promotions.",
+                Warm:   "AC tune-up and duct sealing.",
+                Hot:    "AC replacement and quick repair specials."
+            },
+            Tennessee: {
+                Cold:   "Furnace or dual fuel system check.",
+                Cool:   "HVAC spring maintenance offers.",
+                Fair:   "Promote maintenance plans, duct cleaning, or air purification.",
+                Warm:   "AC tune-up and thermostat calibration.",
+                Hot:    "Emergency AC repairs."
+            },
+            Michigan: {
+                Cold:   "Furnace and humidifier specials.",
+                Cool:   "Transition tune-ups and duct inspection.",
+                Fair:   "Maintenance contract, duct sealing, air quality upgrades.",
+                Warm:   "AC tune-up offers and IAQ add-ons.",
+                Hot:    "Quick AC service and replacement."
+            },
+            Maryland: {
+                Cold:   "Furnace/boiler service and winterization.",
+                Cool:   "Dual HVAC tune-up specials.",
+                Fair:   "IAQ solutions, air purification, or filter club.",
+                Warm:   "AC tune-up and energy audit.",
+                Hot:    "Emergency AC service."
+            },
+            Wisconsin: {
+                Cold:   "Furnace/humidifier check and insulation review.",
+                Cool:   "Transition tune-ups, duct and filter changes.",
+                Fair:   "Promote air purification, duct cleaning, or service plans.",
+                Warm:   "AC tune-up, filter specials.",
+                Hot:    "Emergency AC repair."
+            },
+            "New Mexico": {
+                Cold:   "Heat pump or mini-split inspection.",
+                Cool:   "Full-system spring tune-ups.",
+                Fair:   "Maintenance contract, air purification upgrades.",
+                Warm:   "AC inspection before summer heat.",
+                Hot:    "Fast-response AC repair or install."
+            },
+            Indiana: {
+                Cold:   "Furnace/boiler check and humidifier inspection.",
+                Cool:   "Full HVAC maintenance package.",
+                Fair:   "Duct/vent cleaning, air purifier.",
+                Warm:   "AC tune-up and thermostat check.",
+                Hot:    "Rapid AC service."
+            },
+            Washington: {
+                Cold:   "Heat pump or gas furnace check.",
+                Cool:   "HVAC system tune-ups for pollen season.",
+                Fair:   "Air filtration upgrades and duct cleaning.",
+                Warm:   "AC tune-up specials.",
+                Hot:    "Emergency AC repair."
+            },
+            "District of Columbia": {
+                Cold:   "Furnace/boiler inspection and filter club.",
+                Cool:   "Spring tune-up offers.",
+                Fair:   "Promote maintenance plans, IAQ upgrades.",
+                Warm:   "AC tune-up and filter replacement.",
+                Hot:    "Rapid AC service."
+            },
+            Massachusetts: {
+                Cold:   "Furnace/humidifier service.",
+                Cool:   "Dual system tune-ups.",
+                Fair:   "Maintenance plans, duct cleaning, IAQ add-ons.",
+                Warm:   "AC tune-up and efficiency checks.",
+                Hot:    "Emergency AC repair and replacement."
+            },
+            Missouri: {
+                Cold:   "Furnace/boiler check, humidifier service.",
+                Cool:   "Dual system tune-ups.",
+                Fair:   "Promote air purifier, duct cleaning.",
+                Warm:   "AC tune-up and thermostat calibration.",
+                Hot:    "Fast AC repairs."
+            },
+            Kentucky: {
+                Cold:   "Furnace/heat pump check.",
+                Cool:   "HVAC tune-up, filter special.",
+                Fair:   "Promote duct cleaning, maintenance plan.",
+                Warm:   "AC tune-up, IAQ bundle.",
+                Hot:    "Quick AC repair."
+            },
+            Oregon: {
+                Cold:   "Heat pump/gas furnace check.",
+                Cool:   "HVAC spring tune-up.",
+                Fair:   "Maintenance contract or duct/IAQ cleaning.",
+                Warm:   "AC tune-up offer.",
+                Hot:    "Emergency AC service."
+            },
+            Nevada: {
+                Cold:   "Heating check and air quality upgrade.",
+                Cool:   "HVAC tune-up for dust/allergy control.",
+                Fair:   "Maintenance plans, ductless solutions.",
+                Warm:   "AC tune-up and IAQ offer.",
+                Hot:    "Fast AC replacement."
+            },
+            Minnesota: {
+                Cold:   "Furnace check and humidifier bundle.",
+                Cool:   "Full-system inspection.",
+                Fair:   "Duct cleaning, IAQ specials.",
+                Warm:   "AC tune-up, pre-summer efficiency check.",
+                Hot:    "Emergency AC repair."
+            },
+            Virginia: {
+                Cold:   "Furnace/humidifier service.",
+                Cool:   "Spring tune-up specials.",
+                Fair:   "Duct cleaning, maintenance contracts.",
+                Warm:   "AC tune-up, filter swap.",
+                Hot:    "Fast-response AC repair."
+            },
+            Louisiana: {
+                Cold:   "Heat pump/furnace check.",
+                Cool:   "Full-system maintenance.",
+                Fair:   "Promote IAQ or ductless solutions.",
+                Warm:   "AC tune-up, refrigerant check.",
+                Hot:    "Emergency AC repair."
+            },
+            Oklahoma: {
+                Cold:   "Furnace service and humidity control.",
+                Cool:   "Dual tune-ups, spring specials.",
+                Fair:   "Maintenance plans, duct cleaning.",
+                Warm:   "AC tune-up offer.",
+                Hot:    "AC repair/replacement."
+            },
+            Nebraska: {
+                Cold:   "Furnace/boiler service.",
+                Cool:   "HVAC tune-up specials.",
+                Fair:   "Duct/vent cleaning, air purification.",
+                Warm:   "AC tune-up, efficiency check.",
+                Hot:    "Rapid AC repair."
+            },
+            Hawaii: {
+                Cold:   "HVAC check, air quality package.",
+                Cool:   "Promote whole-home dehumidifier.",
+                Fair:   "Air purification and ductless upgrades.",
+                Warm:   "AC tune-up or mini-split maintenance.",
+                Hot:    "Emergency AC service."
+            },
+            Alaska: {
+                Cold:   "Furnace/boiler safety check.",
+                Cool:   "Transition tune-ups.",
+                Fair:   "Promote maintenance plans, IAQ add-ons.",
+                Warm:   "AC/ventilation check (for warm spells).",
+                Hot:    "Promote whole-home fans."
+            },
+            "New Jersey": {
+                Cold:   "Furnace/humidifier service.",
+                Cool:   "HVAC inspection.",
+                Fair:   "Duct/vent cleaning, IAQ offers.",
+                Warm:   "AC tune-up and filter swap.",
+                Hot:    "Rapid AC repair."
+            },
+            Idaho: {
+                Cold:   "Furnace or heat pump check.",
+                Cool:   "HVAC maintenance plan.",
+                Fair:   "Promote duct cleaning, IAQ upgrades.",
+                Warm:   "AC tune-up and filter offers.",
+                Hot:    "Fast AC repair."
+            },
+            "New York": {
+                Cold:   "Furnace/boiler check.",
+                Cool:   "Humidifier/IAQ offers.",
+                Fair:   "Maintenance plan, duct cleaning.",
+                Warm:   "AC tune-up, smart thermostat.",
+                Hot:    "Emergency AC repair."
+            },
+            Alabama: {
+                Cold:   "Heat pump/furnace service.",
+                Cool:   "HVAC check, air quality bundle.",
+                Fair:   "Maintenance plan, duct cleaning.",
+                Warm:   "AC tune-up, pre-summer offer.",
+                Hot:    "Quick AC repair."
+            },
+            Arkansas: {
+                Cold:   "Furnace check.",
+                Cool:   "Spring tune-up offer.",
+                Fair:   "Maintenance plan, IAQ upgrade.",
+                Warm:   "AC tune-up.",
+                Hot:    "Emergency AC service."
+            },
+            Connecticut: {
+                Cold:   "Furnace check and humidifier service.",
+                Cool:   "Full HVAC tune-up.",
+                Fair:   "Duct cleaning, IAQ offer.",
+                Warm:   "AC tune-up.",
+                Hot:    "Rapid AC repair."
+            },
+            Delaware: {
+                Cold:   "Furnace/humidifier bundle.",
+                Cool:   "HVAC inspection.",
+                Fair:   "Air purification and maintenance plan.",
+                Warm:   "AC tune-up, filter swap.",
+                Hot:    "Fast AC repair."
+            },
+            Iowa: {
+                Cold:   "Furnace/boiler service.",
+                Cool:   "Spring tune-up offer.",
+                Fair:   "Maintenance plan, IAQ cleaning.",
+                Warm:   "AC tune-up.",
+                Hot:    "Emergency AC repair."
+            },
+            Kansas: {
+                Cold:   "Furnace/boiler inspection.",
+                Cool:   "HVAC tune-up.",
+                Fair:   "Duct cleaning and IAQ package.",
+                Warm:   "AC tune-up.",
+                Hot:    "AC repair/replacement."
+            },
+            Maine: {
+                Cold:   "Furnace/humidifier service.",
+                Cool:   "Full-system inspection.",
+                Fair:   "Promote duct cleaning, maintenance plan.",
+                Warm:   "AC tune-up.",
+                Hot:    "Fast AC repair."
+            },
+            Mississippi: {
+                Cold:   "Heat pump/furnace service.",
+                Cool:   "HVAC tune-up.",
+                Fair:   "Duct cleaning, IAQ specials.",
+                Warm:   "AC tune-up.",
+                Hot:    "Emergency AC repair."
+            },
+            Montana: {
+                Cold:   "Furnace/boiler inspection.",
+                Cool:   "Full HVAC tune-up.",
+                Fair:   "Duct cleaning and IAQ package.",
+                Warm:   "AC tune-up.",
+                Hot:    "Quick AC repair."
+            },
+            "New Hampshire": {
+                Cold:   "Furnace/humidifier service.",
+                Cool:   "Spring tune-up.",
+                Fair:   "Maintenance contract, duct cleaning.",
+                Warm:   "AC tune-up.",
+                Hot:    "Rapid AC repair."
+            },
+            "North Dakota": {
+                Cold:   "Furnace/boiler safety check.",
+                Cool:   "Transition tune-up.",
+                Fair:   "Maintenance plan, duct cleaning.",
+                Warm:   "AC tune-up.",
+                Hot:    "Fast AC repair."
+            },
+            "Rhode Island": {
+                Cold:   "Furnace/humidifier service.",
+                Cool:   "HVAC inspection.",
+                Fair:   "Maintenance plan, duct cleaning.",
+                Warm:   "AC tune-up.",
+                Hot:    "Emergency AC repair."
+            },
+            "South Carolina": {
+                Cold:   "Heat pump/furnace inspection.",
+                Cool:   "HVAC tune-up.",
+                Fair:   "Maintenance plan, duct cleaning.",
+                Warm:   "AC tune-up.",
+                Hot:    "Fast AC repair."
+            },
+            "South Dakota": {
+                Cold:   "Furnace/boiler check.",
+                Cool:   "Transition tune-up.",
+                Fair:   "Maintenance plan, IAQ offer.",
+                Warm:   "AC tune-up.",
+                Hot:    "Quick AC repair."
+            },
+            Utah: {
+                Cold:   "Furnace/heat pump inspection.",
+                Cool:   "Full-system tune-up.",
+                Fair:   "Duct cleaning, IAQ offer.",
+                Warm:   "AC tune-up.",
+                Hot:    "Fast AC repair."
+            },
+            Vermont: {
+                Cold:   "Furnace/humidifier service.",
+                Cool:   "HVAC inspection.",
+                Fair:   "Maintenance plan, duct cleaning.",
+                Warm:   "AC tune-up.",
+                Hot:    "Rapid AC repair."
+            },
+            "West Virginia": {
+                Cold:   "Furnace/humidifier inspection.",
+                Cool:   "Full HVAC tune-up.",
+                Fair:   "Maintenance plan, IAQ offer.",
+                Warm:   "AC tune-up.",
+                Hot:    "Emergency AC repair."
+            },
+            Wyoming: {
+                Cold:   "Furnace/boiler check.",
+                Cool:   "Full HVAC tune-up.",
+                Fair:   "Duct cleaning, IAQ package.",
+                Warm:   "AC tune-up.",
+                Hot:    "Quick AC repair."
             }
+        };
+
+        // City list, search/filter, and weather display logic stays the same
+        const cities = { /* ... (same 100+ city list as before; omitted for brevity, but keep your list) ... */ 
+            "New York": { state: "New York" }, "Los Angeles": { state: "California" }, "Chicago": { state: "Illinois" }, 
+            "Houston": { state: "Texas" }, "Phoenix": { state: "Arizona" }, "Philadelphia": { state: "Pennsylvania" },
+            "San Antonio": { state: "Texas" }, "San Diego": { state: "California" }, "Dallas": { state: "Texas" },
+            "San Jose": { state: "California" }, "Austin": { state: "Texas" }, "Jacksonville": { state: "Florida" },
+            "Fort Worth": { state: "Texas" }, "Columbus": { state: "Ohio" }, "Charlotte": { state: "North Carolina" },
+            "San Francisco": { state: "California" }, "Indianapolis": { state: "Indiana" }, "Seattle": { state: "Washington" },
+            "Denver": { state: "Colorado" }, "Washington": { state: "District of Columbia" }, "Boston": { state: "Massachusetts" },
+            "El Paso": { state: "Texas" }, "Nashville": { state: "Tennessee" }, "Detroit": { state: "Michigan" },
+            "Oklahoma City": { state: "Oklahoma" }, "Portland": { state: "Oregon" }, "Las Vegas": { state: "Nevada" },
+            "Memphis": { state: "Tennessee" }, "Louisville": { state: "Kentucky" }, "Baltimore": { state: "Maryland" },
+            "Milwaukee": { state: "Wisconsin" }, "Albuquerque": { state: "New Mexico" }, "Tucson": { state: "Arizona" },
+            "Fresno": { state: "California" }, "Mesa": { state: "Arizona" }, "Sacramento": { state: "California" },
+            "Atlanta": { state: "Georgia" }, "Kansas City": { state: "Missouri" }, "Colorado Springs": { state: "Colorado" },
+            "Miami": { state: "Florida" }, "Raleigh": { state: "North Carolina" }, "Omaha": { state: "Nebraska" },
+            "Long Beach": { state: "California" }, "Virginia Beach": { state: "Virginia" }, "Oakland": { state: "California" },
+            "Minneapolis": { state: "Minnesota" }, "Tulsa": { state: "Oklahoma" }, "Arlington": { state: "Texas" },
+            "Tampa": { state: "Florida" }, "New Orleans": { state: "Louisiana" }, "Wichita": { state: "Kansas" },
+            "Cleveland": { state: "Ohio" }, "Bakersfield": { state: "California" }, "Aurora": { state: "Colorado" },
+            "Anaheim": { state: "California" }, "Honolulu": { state: "Hawaii" }, "Santa Ana": { state: "California" },
+            "Riverside": { state: "California" }, "Corpus Christi": { state: "Texas" }, "Lexington": { state: "Kentucky" },
+            "Stockton": { state: "California" }, "Henderson": { state: "Nevada" }, "Saint Paul": { state: "Minnesota" },
+            "St. Louis": { state: "Missouri" }, "Cincinnati": { state: "Ohio" }, "Pittsburgh": { state: "Pennsylvania" },
+            "Greensboro": { state: "North Carolina" }, "Anchorage": { state: "Alaska" }, "Plano": { state: "Texas" },
+            "Lincoln": { state: "Nebraska" }, "Orlando": { state: "Florida" }, "Irvine": { state: "California" },
+            "Toledo": { state: "Ohio" }, "Jersey City": { state: "New Jersey" }, "Chula Vista": { state: "California" },
+            "Durham": { state: "North Carolina" }, "Fort Wayne": { state: "Indiana" }, "St. Petersburg": { state: "Florida" },
+            "Laredo": { state: "Texas" }, "Buffalo": { state: "New York" }, "Madison": { state: "Wisconsin" },
+            "Lubbock": { state: "Texas" }, "Chandler": { state: "Arizona" }, "Scottsdale": { state: "Arizona" },
+            "Glendale": { state: "Arizona" }, "Reno": { state: "Nevada" }, "Norfolk": { state: "Virginia" },
+            "Winston–Salem": { state: "North Carolina" }, "North Las Vegas": { state: "Nevada" },
+            "Irving": { state: "Texas" }, "Chesapeake": { state: "Virginia" }, "Gilbert": { state: "Arizona" },
+            "Hialeah": { state: "Florida" }, "Garland": { state: "Texas" }, "Fremont": { state: "California" },
+            "Richmond": { state: "Virginia" }, "Boise": { state: "Idaho" }, "Baton Rouge": { state: "Louisiana" }
         };
 
         function classifyTemperature(state, temp) {
@@ -258,10 +507,9 @@
         function normalizeState(state) {
             if (!state) return "";
             state = state.trim();
-            // Support for both "New York" and "NewYork" keys
+            // e.g. New Mexico, North Dakota, etc.
             if (hvacSuggestions[state]) return state;
             if (hvacSuggestions[state.replace(/\s/g,"")]) return state.replace(/\s/g,"");
-            // e.g. "New Mexico" -> "NewMexico"
             return state.replace(/\s/g,"");
         }
 
@@ -284,7 +532,11 @@
                             MD: "Maryland", WI: "Wisconsin", NM: "New Mexico", IN: "Indiana", WA: "Washington",
                             DC: "District of Columbia", MA: "Massachusetts", MO: "Missouri", KY: "Kentucky", OR: "Oregon",
                             NV: "Nevada", MN: "Minnesota", VA: "Virginia", LA: "Louisiana", OK: "Oklahoma",
-                            NE: "Nebraska", HI: "Hawaii", AK: "Alaska", NJ: "New Jersey", ID: "Idaho", NY: "New York"
+                            NE: "Nebraska", HI: "Hawaii", AK: "Alaska", NJ: "New Jersey", ID: "Idaho", NY: "New York",
+                            AL: "Alabama", AR: "Arkansas", CT: "Connecticut", DE: "Delaware", IA: "Iowa", KS: "Kansas",
+                            ME: "Maine", MS: "Mississippi", MT: "Montana", NH: "New Hampshire", ND: "North Dakota",
+                            RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota", UT: "Utah", VT: "Vermont",
+                            WV: "West Virginia", WY: "Wyoming"
                         };
                         const normalized = stateMap[part.toUpperCase()] || part;
                         state = stateTempPerception[normalized] ? normalized : "Default";
@@ -301,7 +553,6 @@
                             daysShown++;
                             const temp = forecast.main.temp;
                             const perception = classifyTemperature(perceptionSourceState, temp);
-                            // Use state-specific, else default, never empty
                             let suggestState = normalizeState(state);
                             let suggestion = (
                                 (hvacSuggestions[suggestState] && hvacSuggestions[suggestState][perception]) ||
