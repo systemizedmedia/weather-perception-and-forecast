@@ -49,11 +49,21 @@
         }
         .forecast-entry {
             display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            background: #fafaff;
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: 0 1px 3px rgba(30,40,60,0.06);
         }
         .forecast-entry p {
             margin-left: 10px;
+        }
+        .hvac-offer-label {
+            color: #137a37;
+            font-weight: bold;
+            margin-top: 5px;
+            margin-bottom: 0;
         }
         #forecast {
             margin-top: 20px;
@@ -143,8 +153,6 @@
         // Fetch weather data
         function fetchWeather(cityName, state) {
             const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cityName}&appid=${apiKey}&units=imperial`;
-            console.log(`Fetching 5-day weather for ${cityName}, ${state}...`);
-
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error(`Error fetching data for ${cityName}: ${response.statusText}`);
@@ -162,7 +170,7 @@
                         const forecastDate = new Date(forecast.dt * 1000);
                         const dayString = forecastDate.toDateString();
 
-                        // Show the first entry for each day (more reliable than just noon)
+                        // Show the first entry for each day (for reliability)
                         if (!shownDates[dayString]) {
                             shownDates[dayString] = true;
                             daysCount++;
@@ -171,23 +179,28 @@
                             const perception = classifyTemperature(state, temp);
                             const iconCode = forecast.weather[0].icon;
                             const iconUrl = `https://openweathermap.org/img/wn/${iconCode}.png`;
-                            const hvacSuggestion = hvacSuggestions[state][perception];
+                            // Defensive: fallback in case key is missing
+                            const suggestion = (hvacSuggestions[state] && hvacSuggestions[state][perception])
+                                ? hvacSuggestions[state][perception]
+                                : 'No suggestion available for this state/perception.';
 
                             forecastDiv.innerHTML += `
                                 <div class="forecast-entry">
                                     <img class="weather-icon" src="${iconUrl}" alt="Weather icon" />
-                                    <p>
-                                        <strong>${forecastDate.toLocaleDateString()}:</strong> 
-                                        ${temp}°F – Perceived as <strong>${perception}</strong><br>
-                                        <em>Recommended HVAC offer: ${hvacSuggestion}</em>
-                                    </p>
+                                    <div>
+                                        <p>
+                                            <strong>${forecastDate.toLocaleDateString()}:</strong> 
+                                            ${temp}°F – Perceived as <strong>${perception}</strong>
+                                        </p>
+                                        <p class="hvac-offer-label">Recommended HVAC offer:</p>
+                                        <p>${suggestion}</p>
+                                    </div>
                                 </div>
                             `;
                         }
                     }
                 })
                 .catch(error => {
-                    console.error(error);
                     const forecastDiv = document.getElementById('forecast');
                     forecastDiv.innerHTML = `<p style="color:red;">Failed to fetch data for ${cityName}, ${state}: ${error.message}</p>`;
                 });
