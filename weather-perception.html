@@ -154,16 +154,17 @@
                     const forecastDiv = document.getElementById('forecast');
                     forecastDiv.innerHTML = `<h2>5-Day Weather Forecast for ${cityName}, ${state}</h2>`;
 
-                    let datesShown = {};
+                    let shownDates = {};
                     let daysCount = 0;
 
-                    data.list.forEach((forecast) => {
+                    for (let i = 0; i < data.list.length && daysCount < 5; i++) {
+                        const forecast = data.list[i];
                         const forecastDate = new Date(forecast.dt * 1000);
                         const dayString = forecastDate.toDateString();
 
-                        // Only show the forecast closest to 12:00 PM for each day
-                        if (!datesShown[dayString] && forecastDate.getHours() === 12 && daysCount < 5) {
-                            datesShown[dayString] = true;
+                        // Show the first entry for each day (more reliable than just noon)
+                        if (!shownDates[dayString]) {
+                            shownDates[dayString] = true;
                             daysCount++;
 
                             const temp = forecast.main.temp;
@@ -183,7 +184,7 @@
                                 </div>
                             `;
                         }
-                    });
+                    }
                 })
                 .catch(error => {
                     console.error(error);
